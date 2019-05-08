@@ -1,6 +1,6 @@
 # Connect Four
 
-A simple Connect Four implementation in React.
+A simple Connect Four implementation in React. (Demo)[https://thebrengun.github.io/connect-four]
 
 ## Why
 
