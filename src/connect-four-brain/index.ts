@@ -1,81 +1,68 @@
-export function createBoard(width:number = 8, height:number = 6):null|string[][] {
-	const board:null|string[][] = new Array(height).fill(null).map(v => new Array(width).fill(null));
-	return board;
+interface Board extends Array<any[]> {}
+interface LocationTuple extends Array<number> {0: number, 1: number}
+interface Token {id: string}
+
+export function getEmptyBoard(width: number = 7, height:number = 6):Board {
+	return new Array(width).fill(null).map(v => new Array(height).fill(null));
 }
 
-export function findLandingRow(board:string[][], column:number):number {
-	for(let i = board.length - 1; i > -1; i--) {
-		if(board[i][column] === null) {
-			return i;
-		}
-	}
-	throw new Error('No empty spaces in this row');
+export function getNextBoard([column, row]:LocationTuple, board:Board, token:Token):Board {
+	return board.slice(0, column).concat([
+			board[column].slice(0, row).concat([ token ]).concat(board[column].slice(row + 1))
+		]).concat(board.slice(column + 1));
 }
 
-export function findWin(board:string[][], location:number[]):number[][] {
-	const [ row, column ] = location;
-	const symbol:string = board[row][column];
-
-	if(symbol === null) {
-		throw new Error('Cannot pass empty location as starting point to find win');
+export function addToColumn(column:number, board:Board):LocationTuple {
+	const row = board[column].indexOf(null);
+	if(row === -1) {
+		throw new Error('No empty spaces in this column');
 	}
+	return [column, row];
+}
 
-	for(let i = 0; i < 4; i++) {
-		const streak = [[row, column]];
-		const walking = [true, true];
-		let offset = 1;
+export function findWin(location:LocationTuple, board:Board, streakLen:number = 4) {
+	const [ column, row ] = location;
+	const token:Token|null = board[column][row];
+	if(token === null) {
+		return [];
+	}
+	const directions:LocationTuple[][] = [
+		[[0, 1], [0, -1]], [[-1, 0], [1, 0]],  // Vertical, Horizontal
+		[[-1, 1], [1, -1]], [[-1, -1], [1, 1]] // Diagonal
+	];
 
-		while((walking[0] || walking[1]) && streak.length < 4) {
-			const bounds = getDirections([row, column], offset)[i];
-			bounds.forEach(
-				([offsetRow, offsetColumn], idx) => {
-					const inBounds = offsetRow >= 0 && offsetRow < board.length && offsetColumn >= 0 && offsetColumn < board[offsetRow].length;
-					const addToStreak = idx === 0 ? 'unshift' : 'push';
-					if(walking[idx] === true && inBounds && board[offsetRow][offsetColumn] === symbol) {
-						streak[addToStreak]([offsetRow, offsetColumn]);
-					} else {
-						walking[idx] = false;
-					}
-				}
+	enum AddMethod {push = 'push', unshift = 'unshift'};
+
+	for(let j = 0; j < directions.length; j++) {
+		const vectors:LocationTuple[] = directions[j];
+		let i = 1, streak = [location], addMethod = AddMethod.push;
+		while(streak.length < streakLen && vectors.length > 0) {
+			const currentVector = vectors.pop();
+			if(!currentVector) {
+				throw new Error('Vector cannot be undefined');
+			}
+			const [ offsetColumn, offsetRow ] = [
+				location[0] + (currentVector[0] * i),
+				location[1] + (currentVector[1] * i)
+			];
+			const inBounds = (
+				(offsetColumn >= 0 && offsetColumn < board.length) && 
+				(offsetRow >= 0 && offsetRow < board[offsetColumn].length)
 			);
-			offset++;
+
+			if(inBounds && board[offsetColumn][offsetRow] !== null && board[offsetColumn][offsetRow].id === token.id) {
+				streak[addMethod]([offsetColumn, offsetRow]);
+				vectors.push(currentVector);
+				i++;
+			} else {
+				i = 1;
+				addMethod = AddMethod.unshift;
+			}
 		}
-		// We found a win including the symbol at given location
+
 		if(streak.length === 4) {
 			return streak;
 		}
 	}
 	return [];
-}
-
-function getDirections([row, column]:number[], offset:number):number[][] {
-	return [
-		[[row - offset, column], [row + offset, column]], 									// Vertical
-		[[row, column - offset], [row, column + offset]],										// Horizontal
-		[[row - offset, column - offset], [row + offset, column + offset]],	// Descending Diagonal
-		[[row + offset, column - offset], [row - offset, column + offset]]	// Ascending Diagonal
-	];
-}
-
-function getNextBoard(board:any[][], [row, column]:number[], nextValue:any) {
-	return board.slice(0, row).concat([
-		board[row].slice(0, column).concat([nextValue]).concat(board[row].slice(column + 1))
-	]).concat(
-		board.slice(row + 1)
-	);
-}
-
-export function dropPiece(board:any[][], col:number, piece:string) {
-	try {
-		const landingRow = findLandingRow(board, col);
-		const location = [landingRow, col];
-		const nextBoard = getNextBoard(board, location, piece);
-		return {
-			board: nextBoard,
-			streak: findWin(nextBoard, location)
-		};
-
-	} catch(err) {
-		throw err;
-	}
 }

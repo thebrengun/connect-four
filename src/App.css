@@ -1,59 +1,64 @@
-.board {
-  display: flex;
-  flex-direction: column;
-  background: yellow;
+body {
+  background: rgb(0,107,221);
 }
 
-.board__row {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  grid-template-rows: 12.5vw;
-}
-
-.board__cell {
+.App {
   display: flex;
   flex-direction: row;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
-.board__cell--game-over {
-  background: rgba(0, 0, 0, .25);
+.board {
+  width: 90%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-around;
 }
 
-.board__cell--winner {
-  background: transparent;
+.board__column {
+  background: rgba(0,80,194,0.5);
+  margin: 0;
+  padding: 0;
+  box-shadow: inset 2vw 2vw 4vw rgba(0,50,164,0.5);
+  border-style: solid;
+  border-width: 1px;
+  border-color: transparent;
 }
 
 .token {
-  width: 80%;
-  height: 80%;
   border-radius: 50%;
-}
-
-.token--empty {
-  background: white;
-}
-
-.token--empty:hover {
-  background: #cccccc;
-}
-
-.token--red {
-  background: red;
-}
-
-.token--black {
-  background: black;
-}
-
-.turn {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: .5em;
-  font-size: 3rem;
 }
 
-.--red-text {color: red;}
-.--black-text {color: black;}
+.token--red {
+  box-shadow: .5vw .5vw 2vw rgba(0,0,0,0.6);
+  background: #ff0000;
+  background-image: radial-gradient(
+    circle,
+    #ff8800,
+    #ff0000
+  );
+}
+
+.token--black {
+  background: #000000;
+  background-image: radial-gradient(
+    circle,
+    #646464,
+    #000000
+  );
+}
+
+.token--gameover {
+  opacity: .5;
+}
+
+.token--winner {
+  box-shadow: .5vw .5vw 2vw yellow;
+  opacity: 1;
+}

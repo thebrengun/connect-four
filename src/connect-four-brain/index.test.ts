@@ -1,123 +1,69 @@
-import { createBoard, findWin, findLandingRow } from './index.ts';
+import { getEmptyBoard, getNextBoard, addToColumn, findWin } from './index.ts';
 
-describe('createBoard', () => {
-	test('it should create a board with default width and height', () => {
-		expect(createBoard()).toEqual([
-			new Array(8).fill(null),
-			new Array(8).fill(null),
-			new Array(8).fill(null),
-			new Array(8).fill(null),
-			new Array(8).fill(null),
-			new Array(8).fill(null)
-		]);
+describe('Connect Four Brain', () => {
+	const width = Math.floor(Math.random() * 8) + 6;
+	const height = Math.floor(Math.random() * 8) + 4;
+	const streak = 4;
+	const RED_TOKEN = {id: 'RED_TOKEN'};
+	const BLK_TOKEN = {id: 'BLK_TOKEN'};
+	let board = getEmptyBoard(width, height);
+	test('length of columns should equal width', () => {
+		expect(board.length).toBe(width);
 	});
 
-	test('it should accept width and height parameters', () => {
-		expect(createBoard(2, 2)).toEqual([[null, null], [null, null]]);
+	test('each column should contain an array equal to height with null values', () => {
+		board.map(column => {
+			expect(Array.isArray(column)).toBe(true);
+			expect(column.length).toBe(height);
+			expect(column.every(v => v === null)).toBe(true);
+		});
 	});
 
-	test('it should contain unique rows, not references!', () => {
-		const board = createBoard();
+	test('each column should be unique', () => {
 		expect(board[0]).not.toBe(board[1]);
 	});
-});
 
-describe('findLandingRow', () => {
-	test('it should take a board and a given column and return the row a token will land in', () => {
-		const board:number[][] = createBoard();
-		expect(findLandingRow(board, 0)).toBe(board.length - 1);
-		board[board.length - 1] = new Array(8).fill('X');
-		expect(findLandingRow(board, 3)).toBe(board.length - 2);
+	test('an item can be added to a column', () => {
+		board = getNextBoard(addToColumn(0, board), board, RED_TOKEN);
+		expect(board[0][0]).toBe(RED_TOKEN);
 	});
 
-	test('if the column is full it will throw an error', () => {
-		const width = 8, height = 6;
-		const board:number[][] = createBoard(width, height);
-		const column = 2;
-		for(let i = 0; i < board.length; i++) {
-			board[findLandingRow(board, column)][column] = i;
+	test('an error will be thrown if the column is full', () => {
+		while(board[0].indexOf(null) > -1) {
+			board = getNextBoard(addToColumn(0, board), board, RED_TOKEN);
 		}
-		const mockBoard = new Array(height).fill(null).map(
-			(row, rowIdx) => new Array(width).fill(null).map(
-					(col, colIdx) => colIdx === column ? height - 1 - rowIdx : col
-			)
-		);
-		expect(board).toEqual(mockBoard);
-		expect(() => findLandingRow(board, column)).toThrow();
-	});
-});
-
-describe('findWin', () => {
-	test('it should throw an exception if provided location has no token', () => {
-		const board = createBoard();	
-		const randomRow = Math.floor(Math.random() * board.length);
-		const randomCol = Math.floor(Math.random() * board[randomRow].length);
-		expect(() => findWin(board, [randomRow, randomCol])).toThrow();
+		expect(() => addToColumn(0, board, RED_TOKEN)).toThrow();
 	});
 
-	test('it should return empty array if no win on board', () => {
-		for(let i = 0; i < 3; i++) {
-			const board = createBoard();
-			const randomRow = Math.floor(Math.random() * board.length);
-			const randomCol = Math.floor(Math.random() * board[randomRow].length);
-			board[randomRow][randomCol] = 'RED';
-			expect(findWin(board, [randomRow, randomCol])).toEqual([]);
-		}
+	test('a vertical streak will win', () => {
+		expect(findWin([0, 0], board)).toEqual([[0, 3], [0, 2], [0, 1], [0, 0]]);
 	});
 
-	test('it should find a vertical win', () => {
-		const location = [0, 6];
-		const streak = [[0, 6], [1, 6], [2, 6], [3, 6]];
-		const board = [
-			[null, null, null, null, null, null, 'RED', null],
-			[null, null, null, null, null, null, 'RED', null],
-			[null, null, null, null, null, null, 'RED', null],
-			[null, null, null, null, null, null, 'RED', null],
-			[null, null, null, null, null, null, 'BLK', null],
-			[null, null, null, null, null, null, 'BLK', null]
-		];
-		expect(findWin(board, location)).toEqual(streak);
+	test('a horizontal streak will win', () => {
+		board = getEmptyBoard(width, height);
+		board[1][0] = BLK_TOKEN;
+		board[2][0] = BLK_TOKEN;
+		board[3][0] = BLK_TOKEN;
+		board[4][0] = BLK_TOKEN;
+		expect(findWin([4, 0], board)).toEqual([[1, 0], [2, 0], [3, 0], [4, 0]]);
 	});
 
-	test('it should find a horizontal win', () => {
-		const location = [5, 2];
-		const streak = [[5, 2], [5, 3], [5, 4], [5, 5]];
-		const board = [
-			[null, null, null, null, null, null, null, null],
-			[null, null, null, null, null, null, null, null],
-			[null, null, null, null, null, null, null, null],
-			[null, null, null, null, null, null, null, null],
-			[null, null, null, null, null, null, null, null],
-			[null, null, 'RED', 'RED', 'RED', 'RED', null, null]
-		];
-		expect(findWin(board, location)).toEqual(streak);
+	test('a diagonal streak will win', () => {
+		board = getEmptyBoard(width, height);
+		board[0][0] = RED_TOKEN;
+		board[1][1] = RED_TOKEN;
+		board[2][2] = RED_TOKEN;
+		board[3][3] = RED_TOKEN;
+		board[1][3] = RED_TOKEN;
+		board[2][2] = RED_TOKEN;
+		board[3][1] = RED_TOKEN;
+		board[4][0] = RED_TOKEN;
+		expect(findWin([3, 3], board)).toEqual([[0, 0], [1, 1], [2, 2], [3, 3]]);
+		expect(findWin([1, 3], board)).toEqual([[1, 3], [2, 2], [3, 1], [4, 0]]);
 	});
 
-	test('it should find an ascending diagonal win', () => {
-		const location = [3, 3];
-		const streak = [[5, 1], [4, 2], [3, 3], [2, 4]];
-		const board = [
-			[null, null, null, null, null, null, null, null],
-			[null, null, null, null, null, null, null, null],
-			[null, null, null, null, 'BLK', null, null, null],
-			[null, null, null, 'BLK', 'BLK', null, null, null],
-			[null, null, 'BLK', 'BLK', 'BLK', null, null, null],
-			[null, 'BLK', 'RED', 'RED', 'RED', 'RED', null, null]
-		];
-		expect(findWin(board, location)).toEqual(streak);
-	});
-
-	test('it should find a descending diagonal win', () => {
-		const location = [4, 3];
-		const streak = [[2, 1], [3, 2], [4, 3], [5, 4]];
-		const board = [
-			[null, null, null, null, null, null, null, null],
-			[null, null, null, null, null, null, null, null],
-			[null, 'RED', null, null, null, null, null, null],
-			[null, 'BLK', 'RED', null, null, null, null, null],
-			[null, 'RED', 'BLK', 'RED', null, null, null, null],
-			[null, 'RED', 'BLK', 'RED', 'RED', null, null, null]
-		];
-		expect(findWin(board, location)).toEqual(streak);
+	test('and if there is no win an epmty array will be returned', () => {
+		board = addToColumn(0, getEmptyBoard(width, height), RED_TOKEN);
+		expect(findWin([0, 0], board)).toEqual([]);
 	});
 });
