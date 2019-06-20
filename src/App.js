@@ -46,6 +46,20 @@ function App() {
     }
   };
 
+  const getClassNames = (token, isGameover) => {
+    const classNames = ['token'];
+    if(token !== null && token.className) {
+      classNames.push(token.className);
+    }
+    if(isGameover) {
+      classNames.push('token--gameover');
+    }
+    if(token !== null && token.winner) {
+      classNames.push('token--winner');
+    }
+    return classNames.join(' ');
+  };
+
   return (
     <div className="App">
       <div className="board">
@@ -60,7 +74,7 @@ function App() {
               (token, rowNum) => 
                 <div 
                   style={tokenStyles} 
-                  className={`token ${token !== null && token.className} ${isGameover && 'token--gameover'} ${token !== null && token.winner && 'token--winner'}`} 
+                  className={getClassNames(token, isGameover)} 
                   key={rowNum}
                 >
                 </div>
