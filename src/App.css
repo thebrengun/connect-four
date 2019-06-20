@@ -28,11 +28,22 @@ body {
   border-color: transparent;
 }
 
+.board__cell {
+  display: flex;
+}
+
 .token {
+  flex-grow: 1;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform .2s ease-in;
+  transform: translate(0, -100vh);
+}
+
+.token--black, .token--red {
+  transform: translate(0, 0);
 }
 
 .token--red {

@@ -73,10 +73,11 @@ function App() {
             {column.slice().reverse().map(
               (token, rowNum) => 
                 <div 
+                  className="board__cell"
                   style={tokenStyles} 
-                  className={getClassNames(token, isGameover)} 
                   key={rowNum}
                 >
+                  <div className={getClassNames(token, isGameover)}></div>
                 </div>
             )}
           </button>
