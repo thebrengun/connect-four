@@ -12,6 +12,7 @@ body {
 
 .board {
   width: 90%;
+  max-width: 140vh;
   display: flex;
   flex-direction: row;
   align-items: flex-end;
