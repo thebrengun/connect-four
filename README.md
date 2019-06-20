@@ -2,7 +2,7 @@
 
 A simple Connect Four implementation in React. [Demo](https://thebrengun.github.io/connect-four)
 
-![Demo Animation](../assets/connect-four-demo.gif?raw=true)
+[![Demo Animation](../assets/connect-four-demo.gif?raw=true)](https://thebrengun.github.io/connect-four)
 
 ## Why
 
