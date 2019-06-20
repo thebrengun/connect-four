@@ -2,6 +2,8 @@
 
 A simple Connect Four implementation in React. [Demo](https://thebrengun.github.io/connect-four)
 
+![Demo Animation](../assets/connect-four-demo.gif?raw=true)
+
 ## Why
 
 This repo served several purposes for me.
